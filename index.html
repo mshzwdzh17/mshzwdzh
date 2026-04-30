@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文艺复欣 · 手账作家</title>
+    <style>
+        :root {
+            --paper: #fffaf3;
+            --ink: #4a3b32;
+            --accent: #c0764d;
+            --soft: #e7d7c4;
+            --shadow: 0 4px 12px rgba(90, 60, 30, 0.08);
+            --font-serif: 'Noto Serif SC', 'Times New Roman', '宋体', serif;
+            --font-sans: 'Inter', 'PingFang SC', '微软雅黑', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        /* ========== 底层：背景图片层 ========== */
+        body {
+            background-image: url('images/bg.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            font-family: var(--font-sans);
+            color: var(--ink);
+            line-height: 1.7;
+            min-height: 100vh;
+        }
+
+        .main-wrapper {
+            position: relative;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 2.5rem 0 1rem;
+            z-index: 1;
+        }
+
+        /* ========== 上层：半透明内容卡片 ========== */
+        .main-container {
+            background: rgba(255, 250, 243, 0.94);
+            box-shadow: var(--shadow), 0 0 0 1px rgba(160, 120, 80, 0.15);
+            position: relative;
+            padding: 2.5rem 2rem 1rem;
+            border-radius: 24px;
+            backdrop-filter: blur(2px);
+        }
+
+        .main-container::before {
+            content: '';
+            position: absolute;
+            top: 12px; left: 12px; right: 12px; bottom: 12px;
+            border: 1px dashed #d4b896;
+            border-radius: 16px;
+            pointer-events: none;
+            opacity: 0.4;
+            z-index: 0;
+        }
+
+        header { text-align: center; margin-bottom: 2rem; position: relative; z-index: 1; }
+        .logo-name {
+            font-family: var(--font-serif);
+            font-size: 3.4rem; font-weight: 400;
+            color: #5d3e2c;
+            letter-spacing: 4px;
+            margin-bottom: 0.5rem;
+            text-shadow: 1px 1px 0 rgba(200, 160, 120, 0.2);
+        }
+        .tagline {
+            font-style: italic;
+            color: #a68464;
+            font-size: 1.1rem;
+            border-top: 1px solid #dacbb8;
+            border-bottom: 1px solid #dacbb8;
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            margin-top: 0.3rem;
+        }
+
+        .nav-sticky {
+            position: sticky;
+            top: 0;
+            background: rgba(255,250,243,0.92);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            padding: 0.8rem 0;
+            margin: 0 -2rem 2rem;
+            display: flex; justify-content: center; flex-wrap: wrap;
+            gap: 1.2rem;
+            border-bottom: 1px solid #efe1cf;
+            box-shadow: 0 2px 6px rgba(100, 70, 30, 0.05);
+        }
+        .nav-tab {
+            background: none; border: none;
+            font-family: var(--font-serif);
+            font-size: 1.15rem; color: #8b7355;
+            cursor: pointer; padding: 0.4rem 0.8rem;
+            position: relative; transition: 0.2s;
+            letter-spacing: 1px;
+        }
+        .nav-tab:hover { color: #c0764d; }
+        .nav-tab.active { color: #b5491e; font-weight: 600; }
+        .nav-tab.active::after {
+            content: '';
+            position: absolute; bottom: -8px; left: 20%;
+            width: 60%; height: 2px;
+            background: #c0764d; border-radius: 2px;
+        }
+
+        .section { scroll-margin-top: 80px; margin-bottom: 3.5rem; position: relative; z-index: 1; }
+        h2 {
+            font-family: var(--font-serif);
+            font-size: 2rem; font-weight: 400;
+            color: #5d3e2c; margin-bottom: 2rem; text-align: center;
+        }
+        h2::after {
+            content: ''; display: block;
+            width: 50px; height: 2px;
+            background: #cbaa85;
+            margin: 0.8rem auto 0;
+        }
+
+        .about-wrapper { display: flex; flex-direction: column; gap: 2rem; max-width: 700px; margin: 0 auto; text-align: center; font-family: var(--font-serif); font-size: 1.1rem; line-height: 2; }
+        .about-cn, .about-en { padding: 1.5rem; background: rgba(254,250,245,0.8); border-radius: 16px; box-shadow: 0 2px 8px rgba(150,110,70,0.05); border-left: 3px solid #d4b896; }
+        .about-cn { font-size: 1.15rem; color: #4a3628; }
+        .about-en { font-style: italic; color: #6b5744; font-size: 1rem; margin-top: 0.5rem; }
+
+        .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; margin-top: 1rem; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .journal-cover { cursor: pointer; border-radius: 12px; overflow: hidden; background: rgba(255,255,255,0.9); box-shadow: 0 6px 16px rgba(140,100,60,0.08); transition: transform 0.25s, box-shadow 0.25s; text-align: center; }
+        .journal-cover:hover { transform: translateY(-4px); box-shadow: 0 12px 24px rgba(140,100,60,0.15); }
+        .journal-cover img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; }
+        .journal-cover .cover-title { padding: 0.8rem; font-family: var(--font-serif); color: #5d3e2c; font-size: 1rem; letter-spacing: 1px; }
+
+        .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(40,25,15,0.7); backdrop-filter: blur(4px); z-index:1000; justify-content:center; align-items:center; padding:2rem; }
+        .modal-overlay.show { display: flex; }
+        .modal-content { background: #fefaf3; border-radius:20px; max-width:650px; width:100%; padding:1.8rem; box-shadow:0 20px 40px rgba(60,30,10,0.3); position:relative; text-align:center; }
+        .modal-content img { width:100%; max-height:65vh; object-fit:contain; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); margin-bottom:1rem; cursor:default; }
+        .page-controls { display:flex; justify-content:center; align-items:center; gap:2rem; margin-top:0.8rem; }
+        .page-btn { background:#e7d7c4; border:none; color:#4a3628; font-size:1.4rem; width:42px; height:42px; border-radius:50%; cursor:pointer; }
+        .page-btn:hover { background:#d2b89b; }
+        .page-indicator { font-family:var(--font-serif); color:#8b7355; }
+        .close-modal { position:absolute; top:12px; right:20px; background:none; border:none; font-size:2rem; color:#8b7355; cursor:pointer; }
+
+        .craft-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:2rem; max-width:700px; margin:0 auto; }
+        .craft-item { border-radius:14px; overflow:hidden; box-shadow:0 6px 16px rgba(120,80,40,0.1); transition:transform 0.25s; background: rgba(255,255,255,0.9); }
+        .craft-item:hover { transform:translateY(-4px); box-shadow:0 12px 24px rgba(120,80,40,0.2); }
+        .craft-item img { width:100%; aspect-ratio:1/1; object-fit:cover; display:block; }
+
+        .tools-grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:1.5rem; max-width:400px; margin:0 auto; }
+        .tool-item { text-align:center; }
+        .tool-item img { width:100%; aspect-ratio:1/1; object-fit:cover; border-radius:12px; background: rgba(250,243,234,0.8); box-shadow:0 3px 10px rgba(130,90,50,0.08); transition:0.2s; }
+        .tool-item img:hover { transform:scale(1.03); box-shadow:0 8px 18px rgba(130,90,50,0.15); }
+        .tool-caption { margin-top:0.5rem; font-size:0.85rem; color:#7a634c; min-height:1.4em; outline:none; border-bottom:1px dashed transparent; padding:0.1rem 0.2rem; transition:0.2s; background: rgba(255,250,243,0.7); }
+        .tool-caption:focus { border-bottom-color:#c0764d; background:#fffbf5; }
+
+        .contact-icons { display:flex; justify-content:center; gap:2.8rem; flex-wrap:wrap; margin-top:1rem; }
+        .contact-item { display:flex; flex-direction:column; align-items:center; text-decoration:none; color:#5d3e2c; font-size:0.95rem; cursor:pointer; transition:0.2s; border:none; background:none; font-family:inherit; }
+        .contact-item:hover { color:#c0764d; }
+        .contact-icon { width:58px; height:58px; border-radius:50%; background: rgba(241,229,215,0.8); display:flex; align-items:center; justify-content:center; font-size:2rem; margin-bottom:0.5rem; transition:0.25s; }
+        .contact-item:hover .contact-icon { background:#e7ceb5; }
+
+        footer { text-align:center; padding:2rem 0 0.5rem; color:#b8a590; font-size:0.85rem; position:relative; z-index:1; }
+
+        .qr-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(40,25,15,0.7); backdrop-filter:blur(4px); z-index:2000; justify-content:center; align-items:center; padding:2rem; }
+        .qr-modal.show { display:flex; }
+        .qr-modal-content { background:#fefaf3; border-radius:20px; max-width:320px; width:100%; padding:2rem 1.5rem 1.5rem; box-shadow:0 20px 40px rgba(60,30,10,0.3); text-align:center; position:relative; }
+        .qr-modal-content img { width:200px; height:200px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); margin-bottom:1rem; }
+        .qr-close { position:absolute; top:10px; right:18px; background:none; border:none; font-size:1.8rem; color:#8b7355; cursor:pointer; }
+        .qr-hint { color:#8b7355; font-size:0.9rem; }
+
+        @media (max-width: 640px) {
+            .logo-name { font-size: 2.4rem; }
+            .nav-sticky { gap:0.5rem; padding:0.6rem 1rem; margin:0 -1rem 1.5rem; }
+            .nav-tab { font-size:0.95rem; padding:0.2rem 0.3rem; }
+            .gallery-grid { grid-template-columns:1fr; max-width:100%; }
+            .craft-grid { grid-template-columns:1fr; }
+            .tools-grid { max-width:100%; gap:1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-wrapper">
+        <div class="main-container">
+            <header>
+                <h1 class="logo-name">文艺复欣</h1>
+                <div class="tagline">📔 手账 · 手作 · 温度</div>
+            </header>
+
+            <nav class="nav-sticky" id="mainNav">
+                <button class="nav-tab active" data-target="about">关于我</button>
+                <button class="nav-tab" data-target="journals">手账作品</button>
+                <button class="nav-tab" data-target="crafts">手作展示</button>
+                <button class="nav-tab" data-target="tools">素材工具</button>
+                <button class="nav-tab" data-target="contact">联系方式</button>
+            </nav>
+
+            <section id="about" class="section">
+                <h2>📖 关于文艺复欣</h2>
+                <div class="about-wrapper">
+                    <div class="about-cn">
+                        文艺复欣<br>
+                        一位爱瞎想的手作人。平时寡言文静，偶尔话痨沙雕。内心永远充满色彩斑斓的灵感。<br>
+                        主打售卖各色自制手帐本，火漆挂件，手机链等。每一件手作物都在等待一位适合它的有缘人。现也在探索将AI与手帐结合。<br>
+                        希望这些手作小物，能让你也感受到记录生活的乐趣，遇见那个多彩而独特的自己。
+                    </div>
+                    <div class="about-en">
+                        A daydreaming handicrafts person. Usually quiet and reserved, but sometimes talkative and silly. The heart is always filled with colorful inspirations.<br>
+                        Mainly selling various self-made handcrafts such as hand-made notebooks, wax seal pendants, and mobile phone chains. Each handicraft is waiting for its destined owner. I'm also exploring ways to integrate AI with notebooks.<br>
+                        Hope these small handcrafts can also make you feel the joy of recording life and meet that colorful and unique self.
+                    </div>
+                </div>
+            </section>
+
+            <section id="journals" class="section">
+                <h2>📔 手账作品</h2>
+                <div class="gallery-grid" id="journalGrid"></div>
+            </section>
+
+            <section id="crafts" class="section">
+                <h2>✂️ 手作展示</h2>
+                <div class="craft-grid" id="craftGrid"></div>
+            </section>
+
+            <section id="tools" class="section">
+                <h2>🎨 常用工具素材</h2>
+                <div class="tools-grid" id="toolsGrid"></div>
+            </section>
+
+            <section id="contact" class="section">
+                <h2>💌 联系我</h2>
+                <div class="contact-icons">
+                    <a href="mailto:1831750493@qq.com" class="contact-item">
+                        <div class="contact-icon">📧</div>
+                        <span>1831750493@qq.com</span>
+                    </a>
+                    <button class="contact-item" id="wechatBtn">
+                        <div class="contact-icon">💬</div>
+                        <span>公众号：文艺复欣</span>
+                    </button>
+                    <a href="https://www.xiaohongshu.com/user/profile/5377527934" target="_blank" class="contact-item">
+                        <div class="contact-icon">📕</div>
+                        <span>小红书：文艺复欣</span>
+                    </a>
+                </div>
+                <p style="text-align:center; margin-top:2rem; color:#b78b65; font-size:0.9rem;">
+                    扫码或点击图标联系我 ♡ 欢迎一切有趣的合作
+                </p>
+            </section>
+
+            <footer>© 文艺复欣 · 手工的温度</footer>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="pageModal">
+        <div class="modal-content">
+            <button class="close-modal" id="closeModalBtn">&times;</button>
+            <img id="modalPageImage" src="" alt="手账内页" />
+            <div class="page-controls">
+                <button class="page-btn" id="prevPage">◀</button>
+                <span class="page-indicator" id="pageIndicator">1 / 1</span>
+                <button class="page-btn" id="nextPage">▶</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="qr-modal" id="qrModal">
+        <div class="qr-modal-content">
+            <button class="qr-close" id="qrCloseBtn">&times;</button>
+            <img src="images/contact/5.jpg" alt="微信公众号二维码" />
+            <p class="qr-hint">微信扫一扫关注我</p>
+        </div>
+    </div>
+
+    <script>
+        const journalData = [
+            {
+                cover: 'images/journals/手账一/封面/640.jpg', title: '手账一',
+                pages: [
+                    { img: 'images/journals/手账一/内容/640.jpg' },
+                    { img: 'images/journals/手账一/内容/640 (1).jpg' },
+                    { img: 'images/journals/手账一/内容/640 (2).jpg' },
+                    { img: 'images/journals/手账一/内容/640 (3).jpg' },
+                    { img: 'images/journals/手账一/内容/640 (4).jpg' },
+                    { img: 'images/journals/手账一/内容/640 (5).jpg' },
+                    { img: 'images/journals/手账一/内容/640 (6).jpg' },
+                    { img: 'images/journals/手账一/内容/640 (7).jpg' },
+                    { img: 'images/journals/手账一/内容/640 (8).jpg' },
+                    { img: 'images/journals/手账一/内容/640 (9).jpg' },
+                    { img: 'images/journals/手账一/内容/640 (10).jpg' },
+                    { img: 'images/journals/手账一/内容/640 (11).jpg' },
+                    { img: 'images/journals/手账一/内容/640 (12).jpg' },
+                    { img: 'images/journals/手账一/内容/640 (13).jpg' },
+                    { img: 'images/journals/手账一/内容/640 (14).jpg' }
+                ]
+            },
+            {
+                cover: 'images/journals/手账二/封面/640.png', title: '手账二',
+                pages: [
+                    { img: 'images/journals/手账二/内容/640.jpg' },
+                    { img: 'images/journals/手账二/内容/640 (1).jpg' },
+                    { img: 'images/journals/手账二/内容/640 (2).jpg' },
+                    { img: 'images/journals/手账二/内容/640 (3).jpg' },
+                    { img: 'images/journals/手账二/内容/640 (4).jpg' },
+                    { img: 'images/journals/手账二/内容/640 (5).jpg' },
+                    { img: 'images/journals/手账二/内容/640 (6).jpg' },
+                    { img: 'images/journals/手账二/内容/640 (7).jpg' },
+                    { img: 'images/journals/手账二/内容/640 (8).jpg' },
+                    { img: 'images/journals/手账二/内容/640 (9).jpg' },
+                    { img: 'images/journals/手账二/内容/640 (10).jpg' },
+                    { img: 'images/journals/手账二/内容/640 (11).jpg' },
+                    { img: 'images/journals/手账二/内容/640 (12).jpg' },
+                    { img: 'images/journals/手账二/内容/640 (13).jpg' },
+                    { img: 'images/journals/手账二/内容/640 (14).jpg' }
+                ]
+            },
+            {
+                cover: 'images/journals/手账三/封面/640 (15).jpg', title: '手账三',
+                pages: [
+                    { img: 'images/journals/手账三/内容/640.jpg' },
+                    { img: 'images/journals/手账三/内容/640 (1).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (2).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (3).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (4).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (5).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (6).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (7).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (8).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (9).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (10).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (11).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (12).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (13).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (14).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (15).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (16).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (17).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (18).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (19).jpg' },
+                    { img: 'images/journals/手账三/内容/640 (20).jpg' }
+                ]
+            },
+            {
+                cover: 'images/journals/手账四/封面/640 (21).jpg', title: '手账四',
+                pages: [
+                    { img: 'images/journals/手账四/内容/640.jpg' },
+                    { img: 'images/journals/手账四/内容/640 (1).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (2).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (3).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (4).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (5).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (6).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (7).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (8).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (9).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (10).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (11).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (12).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (13).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (14).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (15).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (16).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (17).jpg' },
+                    { img: 'images/journals/手账四/内容/640 (18).jpg' }
+                ]
+            },
+            {
+                cover: 'images/journals/手账五/封面/640 (19).jpg', title: '手账五',
+                pages: [
+                    { img: 'images/journals/手账五/内容/640.jpg' },
+                    { img: 'images/journals/手账五/内容/640 (1).jpg' },
+                    { img: 'images/journals/手账五/内容/640 (2).jpg' },
+                    { img: 'images/journals/手账五/内容/640 (3).jpg' },
+                    { img: 'images/journals/手账五/内容/640 (4).jpg' },
+                    { img: 'images/journals/手账五/内容/640 (5).jpg' },
+                    { img: 'images/journals/手账五/内容/640 (6).jpg' },
+                    { img: 'images/journals/手账五/内容/640 (7).jpg' },
+                    { img: 'images/journals/手账五/内容/640 (8).jpg' },
+                    { img: 'images/journals/手账五/内容/640 (9).jpg' }
+                ]
+            },
+            {
+                cover: 'images/journals/手账六/封面/640 (10).jpg', title: '手账六',
+                pages: [
+                    { img: 'images/journals/手账六/内容/640.jpg' },
+                    { img: 'images/journals/手账六/内容/640 (1).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (2).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (3).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (4).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (5).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (6).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (7).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (8).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (9).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (10).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (11).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (12).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (13).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (14).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (15).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (16).jpg' },
+                    { img: 'images/journals/手账六/内容/640 (17).jpg' }
+                ]
+            }
+        ];
+
+        const craftImages = [
+            'images/crafts/craft1.jpg',
+            'images/crafts/craft2.jpg',
+            'images/crafts/craft3.jpg',
+            'images/crafts/craft4.jpg',
+            'images/crafts/craft5.jpg',
+            'images/crafts/craft6.jpg',
+            'images/crafts/craft7.jpg',
+            'images/crafts/craft8.jpg'
+        ];
+
+        const toolsData = [
+            { img: 'images/tools/1.jpg', name: '胶带与各色马克笔' },
+            { img: 'images/tools/2.jpg', name: '火漆章兼各色卡片、贴纸等' },
+            { img: 'images/tools/3.jpg', name: '火漆蜡' },
+            { img: 'images/tools/4.jpg', name: '各色火漆章' }
+        ];
+
+        let currentJournalIndex = 0, currentPageIndex = 0;
+
+        function renderJournalCovers() {
+            const grid = document.getElementById('journalGrid');
+            grid.innerHTML = journalData.map((journal, idx) => `
+                <div class="journal-cover" data-journal="${idx}">
+                    <img src="${journal.cover}" alt="${journal.title}" loading="lazy">
+                    <div class="cover-title">${journal.title}</div>
+                </div>
+            `).join('');
+
+            document.querySelectorAll('.journal-cover').forEach(cover => {
+                cover.addEventListener('click', function() {
+                    const idx = parseInt(this.dataset.journal);
+                    openJournal(idx);
+                });
+            });
+        }
+
+        function openJournal(journalIdx) {
+            currentJournalIndex = journalIdx; currentPageIndex = 0;
+            showPage();
+            document.getElementById('pageModal').classList.add('show');
+        }
+
+        function closeModal() { document.getElementById('pageModal').classList.remove('show'); }
+
+        function showPage() {
+            const journal = journalData[currentJournalIndex];
+            document.getElementById('modalPageImage').src = journal.pages[currentPageIndex].img;
+            document.getElementById('pageIndicator').textContent = `${currentPageIndex + 1} / ${journal.pages.length}`;
+        }
+
+        function nextPage() {
+            const journal = journalData[currentJournalIndex];
+            if (currentPageIndex < journal.pages.length - 1) { currentPageIndex++; showPage(); }
+        }
+        function prevPage() {
+            if (currentPageIndex > 0) { currentPageIndex--; showPage(); }
+        }
+
+        document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+        document.getElementById('pageModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+        document.getElementById('prevPage').addEventListener('click', prevPage);
+        document.getElementById('nextPage').addEventListener('click', nextPage);
+        document.addEventListener('keydown', function(e) {
+            if (!document.getElementById('pageModal').classList.contains('show')) return;
+            if (e.key === 'ArrowRight') nextPage();
+            if (e.key === 'ArrowLeft') prevPage();
+            if (e.key === 'Escape') closeModal();
+        });
+
+        function renderCrafts() {
+            const grid = document.getElementById('craftGrid');
+            grid.innerHTML = craftImages.map(img => `<div class="craft-item"><img src="${img}" alt="手作作品" loading="lazy"></div>`).join('');
+        }
+
+        function renderTools() {
+            const grid = document.getElementById('toolsGrid');
+            grid.innerHTML = toolsData.map(tool => `
+                <div class="tool-item">
+                    <img src="${tool.img}" alt="${tool.name}" loading="lazy">
+                    <div class="tool-caption" contenteditable="true">${tool.name}</div>
+                </div>
+            `).join('');
+        }
+
+        function setupNavigation() {
+            const nav = document.getElementById('mainNav');
+            const tabs = nav.querySelectorAll('.nav-tab');
+            const sections = document.querySelectorAll('.section');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const target = document.getElementById(this.dataset.target);
+                    if (target) target.scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const id = entry.target.id;
+                    const tab = nav.querySelector(`[data-target="${id}"]`);
+                    if (entry.isIntersecting && tab) {
+                        tabs.forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                    }
+                });
+            }, { root: null, rootMargin: '-30% 0px -60% 0px', threshold: 0 });
+            sections.forEach(section => observer.observe(section));
+        }
+
+        const qrModal = document.getElementById('qrModal');
+        document.getElementById('wechatBtn').addEventListener('click', () => qrModal.classList.add('show'));
+        document.getElementById('qrCloseBtn').addEventListener('click', () => qrModal.classList.remove('show'));
+        qrModal.addEventListener('click', function(e) { if (e.target === this) qrModal.classList.remove('show'); });
+
+        renderJournalCovers();
+        renderCrafts();
+        renderTools();
+        setupNavigation();
+    </script>
+</body>
+</html>
